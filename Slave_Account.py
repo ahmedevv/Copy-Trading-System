@@ -231,6 +231,7 @@ class Slave:
     # Lot Size Calculator
 
     def lotSizeCalculator(self,open_price,sl,symbol,volume):
+        
         MasterContract = Closing.getContractSize(symbol)
         MasterRisk_USD = 0
         # Getting Jpy Pairs Asset Lists
@@ -251,7 +252,9 @@ class Slave:
         # Calculating USD for Trade
         self.initializeMetatrader()
         SlaveInfo = mt5.account_info()
+        
         SlaveBalance = SlaveInfo.balance
+        print('Balance for {} is {}'.format(self.login,SlaveBalance))
         # Risking on Slave Account According to Conditions met on Masters Account 
         SlaveRisk_USD = (SlaveBalance*MasterRisk_PCT) / 100
         if symbol in AssetList:
@@ -283,7 +286,8 @@ class Slave:
         volume = positons[0].volume
         return float(volume)
             
-            
+    
+
 
 
 
@@ -314,7 +318,8 @@ def ExecuteCopyTrading(specifier,ticket,magic,open_price,sl,tp,time,symbol,volum
 
     for i in range(0,len(object_list)):
         
-
+        
+        
         LoginFlag = object_list[i].initializeMetatrader()
         if LoginFlag == False:
                 continue
@@ -344,9 +349,12 @@ def ExecuteCopyTrading(specifier,ticket,magic,open_price,sl,tp,time,symbol,volum
                     SlaveTicket = object_list[i].OrderDict.get(ticket)
                     print('Slave Ticket is :', SlaveTicket)
                     #object_list[i].initializeMetatrader()
-                    tradeSize = object_list[i].fetchVolume(SlaveTicket)
-                    print('Volume for the Closing Trade: ', volume)
-                    object_list[i].ClosingPosition(SlaveTicket,symbol,tradeSize,transaction)
+                    if transaction == 'ORDER_TYPE_BUY' or transaction == 'ORDER_TYPE_SELL':
+                        tradeSize = object_list[i].fetchVolume(SlaveTicket)
+                        object_list[i].ClosingPosition(SlaveTicket,symbol,tradeSize,transaction)
+                    else:
+                        print('Volume for the Closing Trade: ', volume)
+                        object_list[i].ClosingPosition(SlaveTicket,symbol,volume,transaction)
 
 
         # Pending Order
@@ -362,9 +370,12 @@ def ExecuteCopyTrading(specifier,ticket,magic,open_price,sl,tp,time,symbol,volum
                     SlaveTicket = object_list[i].OrderDict.get(id)
                     print('Slave Ticket is :', SlaveTicket)
                     #object_list[i].initializeMetatrader()
-                    tradeSize = object_list[i].fetchVolume(SlaveTicket)
-                    print('Volume for the Closing Trade: ', volume)
-                    object_list[i].ClosingPosition(SlaveTicket,symbol,tradeSize,transaction)
+                    if transaction == 'ORDER_TYPE_BUY' or transaction == 'ORDER_TYPE_SELL':
+                        tradeSize = object_list[i].fetchVolume(SlaveTicket)
+                        object_list[i].ClosingPosition(SlaveTicket,symbol,tradeSize,transaction)
+                    else:
+                        print('Volume for the Closing Trade: ', volume)
+                        object_list[i].ClosingPosition(SlaveTicket,symbol,volume,transaction)
 
         # Third Possibility
         if id == ticket:
